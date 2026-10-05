@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.orel.wallet.domain.Transaction
+import com.orel.wallet.BuildConfig
 import java.text.NumberFormat
 import java.time.Instant
 import java.time.ZoneId
@@ -33,7 +34,13 @@ fun money(minor:Long,currency:String="EUR"):String = NumberFormat.getCurrencyIns
 fun dateTime(timestamp:Long):String = DateTimeFormatter.ofPattern("d MMM · HH:mm",Locale("es","ES")).withZone(ZoneId.systemDefault()).format(Instant.ofEpochMilli(timestamp))
 
 @Composable fun DemoBadge(modifier:Modifier=Modifier,dark:Boolean=false) {
-    Text("MODO DEMO",modifier.clip(RoundedCornerShape(7.dp)).background(if(dark) Color.White.copy(alpha=0.1f) else MaterialTheme.colorScheme.secondaryContainer).padding(horizontal=9.dp,vertical=5.dp),
+    InfoBadge("MODO DEMO",modifier,dark)
+}
+@Composable fun WalletModeBadge(modifier:Modifier=Modifier,dark:Boolean=false) {
+    InfoBadge(if(BuildConfig.DEMO_MODE) "MODO DEMO" else "PERSONAL",modifier,dark)
+}
+@Composable fun InfoBadge(label:String,modifier:Modifier=Modifier,dark:Boolean=false) {
+    Text(label,modifier.clip(RoundedCornerShape(7.dp)).background(if(dark) Color.White.copy(alpha=0.1f) else MaterialTheme.colorScheme.secondaryContainer).padding(horizontal=9.dp,vertical=5.dp),
         color=if(dark) Color(0xFFA7C5FF) else MaterialTheme.colorScheme.primary,fontSize=9.sp,fontWeight=FontWeight.Bold,letterSpacing=1.sp)
 }
 

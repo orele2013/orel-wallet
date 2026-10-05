@@ -40,6 +40,12 @@ class InMemoryWalletRepository(private val seedDemoData: Boolean = true) : Walle
         mutableCards.value = WalletRules.normalize(mutableCards.value.filterNot { it.id == id })
     }
 
+    override suspend fun addExternalCard(network: CardNetwork, displayName: String, last4: String): Card = mutex.withLock {
+        val added = WalletRules.newExternalCard(network, displayName, last4, mutableCards.value.size)
+        mutableCards.value = WalletRules.normalize(mutableCards.value + added)
+        mutableCards.value.first { it.id == added.id }
+    }
+
     override suspend fun updateCard(card: Card) = mutex.withLock {
         mutableCards.value = WalletRules.update(mutableCards.value, card)
     }

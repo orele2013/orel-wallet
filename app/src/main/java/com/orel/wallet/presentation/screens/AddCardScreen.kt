@@ -10,10 +10,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.orel.wallet.domain.CardNetwork
+import com.orel.wallet.BuildConfig
 import com.orel.wallet.presentation.WalletViewModel
 import com.orel.wallet.ui.components.*
 
 @Composable fun AddCardScreen(vm:WalletViewModel,onBack:()->Unit,onAdded:(String)->Unit) {
+    if(!BuildConfig.DEMO_MODE) { ExternalAddCardScreen(vm,onBack,onAdded); return }
     var kind by remember { mutableStateOf<CardNetwork?>(null) }
     var demo by remember { mutableStateOf(false) }
     var provider by remember { mutableStateOf(false) }

@@ -14,9 +14,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.orel.wallet.domain.*
+import com.orel.wallet.BuildConfig
 import com.orel.wallet.ui.components.*
 
 @Composable fun HistoryScreen(transactions:List<Transaction>,onTransaction:(String)->Unit) {
+    if(!BuildConfig.DEMO_MODE) {
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),verticalArrangement=Arrangement.spacedBy(18.dp)) {
+            Text("Tus movimientos",style=MaterialTheme.typography.headlineMedium)
+            Text("Consulta los pagos en Pixpay",style=MaterialTheme.typography.titleLarge)
+            Text("Google Wallet no envía a Orel el resultado ni el historial de tus pagos. Comprueba los importes y estados en tu aplicación Pixpay.",style=MaterialTheme.typography.bodyMedium)
+            Text("Orel no genera movimientos ficticios en esta versión.",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        return
+    }
     var query by remember { mutableStateOf("") }
     var filter by remember { mutableIntStateOf(0) }
     val filtered=transactions.filter { (it.merchant.contains(query,true) || it.last4.contains(query) || it.cardLabel.contains(query,true)) && when(filter){1->it.channel==TransactionChannel.ONLINE; 2->it.channel==TransactionChannel.IN_STORE; else->true} }

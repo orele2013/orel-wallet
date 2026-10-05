@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.orel.wallet.domain.Card
+import com.orel.wallet.BuildConfig
 import com.orel.wallet.nfc.DemoHceGate
 import com.orel.wallet.payments.*
 import com.orel.wallet.presentation.WalletViewModel
@@ -78,7 +79,7 @@ import kotlinx.coroutines.launch
                         if(canAuth && ui.settings.requireBiometric) Button({
                             val requestedSession=session?.takeIf {it.id==ownedSessionId}
                             authenticating=true; authError=null
-                            scope.launch { val result=auth.authenticate(); authenticating=false; when(result) {AuthResult.SUCCESS->requestedSession?.let(vm::authenticated); AuthResult.CANCELLED->authError="Autenticación cancelada. Puedes volver a intentarlo."; AuthResult.UNAVAILABLE->authError="Autenticación no disponible"; AuthResult.ERROR->authError="No se pudo autenticar"} }
+                            scope.launch { val result=auth.authenticate("Autorizar pago DEMO"); authenticating=false; when(result) {AuthResult.SUCCESS->requestedSession?.let(vm::authenticated); AuthResult.CANCELLED->authError="Autenticación cancelada. Puedes volver a intentarlo."; AuthResult.UNAVAILABLE->authError="Autenticación no disponible"; AuthResult.ERROR->authError="No se pudo autenticar"} }
                         },enabled=!authenticating) {Text(if(authenticating) "Esperando autenticación…" else "Usar biometría o PIN")}
                         else OutlinedButton({session?.takeIf {it.id==ownedSessionId}?.let(vm::demoAuthenticate)},colors=ButtonDefaults.outlinedButtonColors(contentColor=Color(0xFFA4C6FF))) {Text("Simular autenticación · Demo")}
                         authError?.let {Text(it,color=Color(0xFFFFB3B3),style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=10.dp))}
@@ -133,10 +134,10 @@ import kotlinx.coroutines.launch
     Column(Modifier.fillMaxSize().padding(28.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.Center) {
         Icon(Icons.Outlined.Lock,"Wallet bloqueada",modifier=Modifier.size(52.dp),tint=MaterialTheme.colorScheme.primary)
         Text("Tu wallet está bloqueada",style=MaterialTheme.typography.titleLarge,modifier=Modifier.padding(vertical=24.dp))
-        DemoBadge()
+        WalletModeBadge()
         Spacer(Modifier.height(20.dp))
         if(auth.availability()) Button({scope.launch {if(auth.authenticate()==AuthResult.SUCCESS) onUnlocked() else error=true}}) {Text("Desbloquear con biometría o PIN")}
-        else Button(onUnlocked) {Text("Desbloquear demo sin biometría")}
+        else Button(onUnlocked) {Text(if(BuildConfig.DEMO_MODE) "Desbloquear demo sin biometría" else "Abrir Orel sin bloqueo")}
         if(error) Text("Autenticación no completada",color=MaterialTheme.colorScheme.error,modifier=Modifier.padding(top=16.dp))
     }
 }

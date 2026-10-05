@@ -28,6 +28,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.Role
 import com.orel.wallet.domain.*
+import com.orel.wallet.BuildConfig
 import com.orel.wallet.nfc.NfcStatus
 import com.orel.wallet.presentation.WalletUiState
 import com.orel.wallet.ui.components.*
@@ -66,20 +67,20 @@ fun HomeScreen(ui:WalletUiState,selectedId:String?,nfc:NfcStatus,onSelect:(Strin
                 Row(Modifier.fillMaxWidth().padding(start=26.dp,end=24.dp,top=17.dp),verticalAlignment=Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text(card?.displayName.orEmpty(),style=MaterialTheme.typography.titleMedium)
-                        Text(if(card?.isDefault==true) "Tarjeta principal · Demo" else "Tarjeta de demostración",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(if(BuildConfig.DEMO_MODE) {if(card?.isDefault==true) "Tarjeta principal · Demo" else "Tarjeta de demostración"} else {if(card?.isDefault==true) "Principal en Orel · Referencia visual" else "Referencia visual"},style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    DemoBadge()
+                    WalletModeBadge()
                 }
                 Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(top=3.dp),horizontalArrangement=Arrangement.Center) {
                     cards.forEachIndexed { index,c -> Box(Modifier.size(48.dp).semantics {contentDescription="Seleccionar ${c.displayName}, ${index+1} de ${cards.size}"; selected=index==pager.currentPage}.clickable { scope.launch { pager.animateScrollToPage(index) } },contentAlignment=Alignment.Center) {
                         Box(Modifier.size(if(index==pager.currentPage) 7.dp else 5.dp).clip(CircleShape).background(if(index==pager.currentPage) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant))
                     } }
                 }
-            } else EmptyState("Tu wallet empieza aquí","Añade tu primera tarjeta demo")
+            } else EmptyState("Tu wallet empieza aquí",if(BuildConfig.DEMO_MODE) "Añade tu primera tarjeta demo" else "Añade una referencia de tu Pixpay y personalízala")
         }
         item {
             Row(Modifier.fillMaxWidth().padding(horizontal=32.dp,vertical=12.dp),horizontalArrangement=Arrangement.SpaceEvenly) {
-                QuickAction(Icons.Outlined.Contactless,"Pagar demo",onPay,card!=null && !card.isLocked && card.network!=CardNetwork.LOYALTY && card.network!=CardNetwork.GIFT)
+                QuickAction(Icons.Outlined.Contactless,if(BuildConfig.DEMO_MODE) "Pagar demo" else "Preparar pago",onPay,card!=null && !card.isLocked && card.network!=CardNetwork.LOYALTY && card.network!=CardNetwork.GIFT)
                 QuickAction(Icons.Outlined.AddCard,"Añadir tarjeta",onAdd)
                 QuickAction(Icons.Outlined.History,"Historial",onHistory)
             }
@@ -87,19 +88,20 @@ fun HomeScreen(ui:WalletUiState,selectedId:String?,nfc:NfcStatus,onSelect:(Strin
         item {
             Column(Modifier.padding(horizontal=24.dp)) {
                 SettingRow(Icons.Outlined.Nfc,if(!nfc.available) "NFC no disponible" else if(nfc.enabled) "NFC activado" else "NFC desactivado",
-                    if(!nfc.available) "Puedes probar los pagos demo" else "Credencial de laboratorio · sin pagos reales",onNfc)
+                    if(BuildConfig.DEMO_MODE) {if(!nfc.available) "Puedes probar los pagos demo" else "Credencial de laboratorio · sin pagos reales"} else {if(!nfc.available) "El pago contactless requiere un móvil con NFC" else "El pago lo gestiona Google Wallet"},onNfc)
                 Row(Modifier.fillMaxWidth().padding(top=26.dp,bottom=5.dp),verticalAlignment=Alignment.CenterVertically) {
-                    Text("Últimos movimientos",style=MaterialTheme.typography.titleMedium,modifier=Modifier.weight(1f))
+                    Text(if(BuildConfig.DEMO_MODE) "Últimos movimientos" else "Tus pagos",style=MaterialTheme.typography.titleMedium,modifier=Modifier.weight(1f))
                     TextButton(onHistory) { Text("Ver todos",fontSize=12.sp) }
                 }
             }
         }
-        if(ui.transactions.isEmpty()) item { EmptyState("Sin movimientos","Tus pagos demo aparecerán aquí",Icons.Outlined.ReceiptLong) }
+        if(!BuildConfig.DEMO_MODE) item { Text("Selecciona la tarjeta para pagar en Google Wallet. Consulta tus movimientos reales en Pixpay.",color=MaterialTheme.colorScheme.onSurfaceVariant,style=MaterialTheme.typography.bodyMedium,modifier=Modifier.padding(horizontal=24.dp,vertical=12.dp)) }
+        else if(ui.transactions.isEmpty()) item { EmptyState("Sin movimientos","Tus pagos demo aparecerán aquí",Icons.Outlined.ReceiptLong) }
         else items(minOf(3,ui.transactions.size)) { i -> Column(Modifier.padding(horizontal=24.dp)) {
             TransactionRow(ui.transactions[i]) { onTransaction(ui.transactions[i].id) }
             if(i<minOf(3,ui.transactions.size)-1) HorizontalDivider(color=MaterialTheme.colorScheme.outlineVariant.copy(alpha=0.6f))
         } }
-        item { Text("Demo Mode does not perform real payments.",color=MaterialTheme.colorScheme.onSurfaceVariant,fontSize=10.sp,modifier=Modifier.padding(horizontal=24.dp,vertical=18.dp)) }
+        item { Text(if(BuildConfig.DEMO_MODE) "Demo Mode does not perform real payments." else "Tus skins son locales. El pago y la verificación pertenecen a Google Wallet.",color=MaterialTheme.colorScheme.onSurfaceVariant,fontSize=10.sp,modifier=Modifier.padding(horizontal=24.dp,vertical=18.dp)) }
     }
 }
 

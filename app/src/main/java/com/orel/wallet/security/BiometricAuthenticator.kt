@@ -15,7 +15,7 @@ class BiometricAuthenticator(private val activity: FragmentActivity) {
     private val authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL
     fun availability(): Boolean = BiometricManager.from(activity).canAuthenticate(authenticators) == BiometricManager.BIOMETRIC_SUCCESS
 
-    suspend fun authenticate(): AuthResult = withContext(Dispatchers.Main.immediate) {
+    suspend fun authenticate(title: String = "Desbloquear Orel Wallet"): AuthResult = withContext(Dispatchers.Main.immediate) {
         if (!availability()) return@withContext AuthResult.UNAVAILABLE
         suspendCancellableCoroutine { continuation ->
             val prompt = BiometricPrompt(activity, ContextCompat.getMainExecutor(activity),
@@ -36,7 +36,7 @@ class BiometricAuthenticator(private val activity: FragmentActivity) {
                 })
             continuation.invokeOnCancellation { prompt.cancelAuthentication() }
             if (continuation.isActive) prompt.authenticate(BiometricPrompt.PromptInfo.Builder()
-                .setTitle("Autorizar pago DEMO")
+                .setTitle(title)
                 .setSubtitle("Confirma tu identidad con Android")
                 .setAllowedAuthenticators(authenticators)
                 .build())

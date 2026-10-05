@@ -1,9 +1,13 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.kotlin.kapt")
 }
+val releaseSigningFile = rootProject.file(providers.environmentVariable("OREL_SIGNING_PROPERTIES").orElse(".tools/signing/release-signing.properties").get())
+val releaseSigning = Properties().apply { if(releaseSigningFile.isFile) releaseSigningFile.inputStream().use {load(it)} }
 android {
     namespace = "com.orel.wallet"
     compileSdk = 35
@@ -11,13 +15,37 @@ android {
         applicationId = "com.orel.wallet"
         minSdk = 30
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0-demo"
+        versionCode = 2
+        versionName = "1.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testProguardFiles("proguard-test-rules.pro")
+    }
+    testBuildType = providers.gradleProperty("orelTestBuildType").orElse("debug").get()
+    if(releaseSigningFile.isFile) signingConfigs {
+        create("personalRelease") {
+            storeFile = rootProject.file(releaseSigning.getProperty("storeFile"))
+            storePassword = releaseSigning.getProperty("storePassword")
+            keyAlias = releaseSigning.getProperty("keyAlias")
+            keyPassword = releaseSigning.getProperty("keyPassword")
+        }
     }
     buildTypes {
+        debug {
+            versionNameSuffix = "-demo"
+            buildConfigField("boolean", "DEMO_MODE", "true")
+            manifestPlaceholders["demoHceEnabled"] = "true"
+            resValue("string", "app_label", "Orel Wallet Demo")
+        }
         release {
-            isMinifyEnabled = true
+            applicationIdSuffix = ".companion"
+            buildConfigField("boolean", "DEMO_MODE", "false")
+            manifestPlaceholders["demoHceEnabled"] = "false"
+            resValue("string", "app_label", "Orel Wallet")
+            // Test-only opt-out: Compose instrumentation needs APIs removed by app-only R8 analysis.
+            val releaseUiTests = providers.gradleProperty("orelReleaseUiTests").orElse("false").get().toBoolean()
+            isMinifyEnabled = !releaseUiTests
+            isShrinkResources = !releaseUiTests
+            if(releaseSigningFile.isFile) signingConfig = signingConfigs.getByName("personalRelease")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }

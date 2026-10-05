@@ -20,6 +20,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.*
 import com.orel.wallet.domain.ThemeMode
+import com.orel.wallet.BuildConfig
 import com.orel.wallet.nfc.DemoHceGate
 import com.orel.wallet.payments.PaymentState
 import com.orel.wallet.presentation.WalletViewModel
@@ -57,7 +58,7 @@ import com.orel.wallet.ui.theme.OrelTheme
     val systemDark=isSystemInDarkTheme()
     val themeDark=ui.settings.themeMode==ThemeMode.DARK || (ui.settings.themeMode==ThemeMode.SYSTEM && systemDark)
     val specialDark=route=="pay/{id}" || (ui.loaded && !ui.settings.onboardingComplete)
-    SideEffect {onWindowState(route=="pay/{id}" || (locked && ui.settings.requireBiometric),specialDark || themeDark)}
+    SideEffect {onWindowState(route=="pay/{id}" || route=="wallet/{id}" || (ui.settings.onboardingComplete && locked && ui.settings.requireBiometric),specialDark || themeDark)}
     OrelTheme(ui.settings) {
         Box(Modifier.fillMaxSize().background(if(specialDark) Color(0xFF090F1A) else MaterialTheme.colorScheme.background).windowInsetsPadding(WindowInsets.safeDrawing)) {
             when {
@@ -74,17 +75,18 @@ import com.orel.wallet.ui.theme.OrelTheme
                     NavHost(nav,startDestination="home",modifier=Modifier.padding(padding).fillMaxSize(),enterTransition={fadeIn(tween(180))+slideInHorizontally(tween(220)) {it/12}},exitTransition={fadeOut(tween(150))},popEnterTransition={fadeIn(tween(180))},popExitTransition={fadeOut(tween(150))}) {
                         composable("home") {
                             val selected=ui.cards.firstOrNull {it.id==selectedId && !it.isHidden} ?: ui.cards.firstOrNull {it.isDefault && !it.isHidden} ?: ui.cards.firstOrNull {!it.isHidden}
-                            HomeScreen(ui,selected?.id,nfc,vm::select,onPay={selected?.let {nav.navigate("pay/${it.id}")}},onAdd={nav.navigate("add")},onHistory={nav.navigate("history")},onDetails={nav.navigate("card/$it")},onSettings={nav.navigate("settings")},onNfc={nav.navigate("nfc")},onTransaction={nav.navigate("transaction/$it")})
+                            HomeScreen(ui,selected?.id,nfc,vm::select,onPay={selected?.let {nav.navigate(paymentRoute(it.id))}},onAdd={nav.navigate("add")},onHistory={nav.navigate("history")},onDetails={nav.navigate("card/$it")},onSettings={nav.navigate("settings")},onNfc={nav.navigate("nfc")},onTransaction={nav.navigate("transaction/$it")})
                         }
                         composable("cards") {CardsScreen(ui.cards,{nav.navigate("add")}) {vm.select(it); nav.navigate("card/$it")}}
                         composable("history") {HistoryScreen(ui.transactions) {nav.navigate("transaction/$it")}}
                         composable("settings") {SettingsScreen(ui.settings,vm::settings,{nav.navigate("cards")},{nav.navigate("nfc")})}
                         composable("add") {AddCardScreen(vm,{nav.popBackStack()}) {id -> nav.navigate("card/$id") {popUpTo("add") {inclusive=true}}}}
                         composable("card/{id}") {back ->
-                            val id=back.arguments?.getString("id"); CardDetailsScreen(ui.cards.firstOrNull {it.id==id},vm,{nav.popBackStack()},{nav.navigate("appearance/$id")},{nav.navigate("pay/$id")})
+                            val id=back.arguments?.getString("id"); CardDetailsScreen(ui.cards.firstOrNull {it.id==id},vm,{nav.popBackStack()},{nav.navigate("appearance/$id")},{id?.let {nav.navigate(paymentRoute(it))}})
                         }
                         composable("appearance/{id}") {back -> AppearanceScreen(ui.cards.firstOrNull {it.id==back.arguments?.getString("id")},vm) {nav.popBackStack()}}
-                        composable("pay/{id}") {back -> PaymentScreen(ui.cards.firstOrNull {it.id==back.arguments?.getString("id")},vm,auth,{nav.popBackStack()}) {id -> nav.navigate("transaction/$id") {popUpTo("pay/{id}") {inclusive=true}}}}
+                        if(BuildConfig.DEMO_MODE) composable("pay/{id}") {back -> PaymentScreen(ui.cards.firstOrNull {it.id==back.arguments?.getString("id")},vm,auth,{nav.popBackStack()}) {id -> nav.navigate("transaction/$id") {popUpTo("pay/{id}") {inclusive=true}}}}
+                        composable("wallet/{id}") {back -> WalletAssistScreen(ui.cards.firstOrNull {it.id==back.arguments?.getString("id")},nfc) {nav.popBackStack()}}
                         composable("transaction/{id}") {back -> TransactionDetailsScreen(ui.transactions.firstOrNull {it.id==back.arguments?.getString("id")}) {nav.popBackStack()}}
                         composable("nfc") {NfcScreen(nfc,ui.settings,vm::settings) {nav.popBackStack()}}
                     }
@@ -93,3 +95,5 @@ import com.orel.wallet.ui.theme.OrelTheme
         }
     }
 }
+
+private fun paymentRoute(id:String)=if(BuildConfig.DEMO_MODE) "pay/$id" else "wallet/$id"

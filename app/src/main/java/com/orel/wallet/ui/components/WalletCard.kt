@@ -53,7 +53,7 @@ fun WalletCard(card: Card, modifier: Modifier = Modifier, compact: Boolean = fal
     Box(modifier.fillMaxWidth().aspectRatio(1.62f)
         .shadow(if (compact) 4.dp else 16.dp, shape, ambientColor = Color(0xFF033582), spotColor = Color(0xFF033582))
         .clip(shape).semantics(mergeDescendants = true) {
-            contentDescription = "${card.displayName}, ${card.network}, termina en ${card.last4}, ${if(card.isDemo) "tarjeta demo" else "tarjeta"}${if(card.isLocked) ", bloqueada" else ""}"
+            contentDescription = "${card.displayName}, ${card.network}, termina en ${card.last4}, ${if(card.isDemo) "tarjeta demo" else "referencia visual"}${if(card.isLocked) ", bloqueada" else ""}"
         }.background(Color(0xFF073474))) {
         when(a.backgroundType) {
             BackgroundType.SKIN -> Image(painterResource(skinResource(a.backgroundValue)), null, Modifier.matchParentSize(), contentScale = ContentScale.Crop, colorFilter = colorFilter)
@@ -69,10 +69,10 @@ fun WalletCard(card: Card, modifier: Modifier = Modifier, compact: Boolean = fal
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column {
                     Text("orel", color=ink, fontSize=if(compact) 16.sp else 22.sp, fontWeight=FontWeight.SemiBold, letterSpacing=(-0.8).sp)
-                    Text(if(card.isDemo) "DEMO CARD" else "WALLET", color=ink.copy(alpha=0.8f), fontSize=8.sp, letterSpacing=2.sp)
+                    Text(if(card.isDemo) "DEMO CARD" else "PERSONAL", color=ink.copy(alpha=0.8f), fontSize=8.sp, letterSpacing=2.sp)
                 }
                 if(card.isLocked) Icon(Icons.Outlined.Lock,"Bloqueada",tint=ink,modifier=Modifier.size(22.dp))
-                else Icon(Icons.Outlined.Contactless, "Contactless${if(!card.contactlessEnabled) " desactivado" else ""}", tint=ink.copy(alpha=if(card.contactlessEnabled) 0.85f else 0.35f),modifier=Modifier.size(26.dp))
+                else if(card.isDemo) Icon(Icons.Outlined.Contactless, "Contactless${if(!card.contactlessEnabled) " desactivado" else ""}", tint=ink.copy(alpha=if(card.contactlessEnabled) 0.85f else 0.35f),modifier=Modifier.size(26.dp))
             }
             if(a.numberPosition == NumberPosition.TOP) CardNumber(card,ink,compact)
             Chip(a.chipStyle, Modifier.size(if(compact) 34.dp else 42.dp,if(compact) 25.dp else 31.dp))

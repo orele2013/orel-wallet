@@ -5,7 +5,10 @@ import java.util.UUID
 
 /** Invariants shared by Room and the in-memory implementation. */
 internal object WalletRules {
-    fun name(value: String): String = value.trim().also { require(it.length in 1..40) { "El nombre debe tener entre 1 y 40 caracteres" } }
+    fun name(value: String): String = value.trim().also {
+        require(it.length in 1..40) { "El nombre debe tener entre 1 y 40 caracteres" }
+        require(!Regex("(?:[0-9][ -]?){12,19}").containsMatchIn(it)) { "No introduzcas números completos de tarjeta" }
+    }
 
     fun appearance(value: CardAppearance) {
         require(value.id.isNotBlank())
@@ -48,6 +51,12 @@ internal object WalletRules {
         return cards.mapIndexed { index, card -> card.copy(sortOrder = index, isDefault = card.id == chosen?.id) }
     }
 
+    fun newExternalCard(network: CardNetwork, displayName: String, last4: String, order: Int): Card {
+        require(network in payableNetworks) { "Selecciona la red que aparece en tu tarjeta" }
+        require(last4.matches(Regex("[0-9]{4}"))) { "Introduce únicamente los últimos cuatro dígitos" }
+        return newCard(network, displayName, order).copy(last4 = last4, isDemo = false, contactlessEnabled = false)
+    }
+
     fun update(current: List<Card>, changed: Card): List<Card> {
         val existing = current.firstOrNull { it.id == changed.id } ?: throw IllegalArgumentException("Tarjeta inexistente")
         require(existing.network == changed.network && existing.last4 == changed.last4 && existing.isDemo == changed.isDemo) {
@@ -83,6 +92,6 @@ internal object WalletRules {
     }
 
     val payableNetworks = setOf(CardNetwork.VISA, CardNetwork.MASTERCARD, CardNetwork.AMEX)
-    private val privateImagePath = Regex("/data/(?:user(?:_de)?/[0-9]+|data)/com\\.orel\\.wallet/no_backup/card-images/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\.image")
+    private val privateImagePath = Regex("/data/(?:user(?:_de)?/[0-9]+|data)/com\\.orel\\.wallet(?:\\.companion)?/no_backup/card-images/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\.image")
     val Card.eligibleDefault: Boolean get() = !isLocked && !isHidden && network in payableNetworks
 }

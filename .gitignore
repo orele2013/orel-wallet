@@ -16,3 +16,6 @@ credentials*
 .superpowers/
 artifacts/*.apk
 backend/node_modules/
+
+.kotlin/
+**/__pycache__/

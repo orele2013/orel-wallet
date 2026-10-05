@@ -9,6 +9,7 @@ interface WalletRepository {
     val settings: Flow<WalletSettings>
     suspend fun initialize()
     suspend fun addCard(network: CardNetwork, displayName: String): Card
+    suspend fun addExternalCard(network: CardNetwork, displayName: String, last4: String): Card
     suspend fun removeCard(id: String)
     suspend fun updateCard(card: Card)
     suspend fun setDefault(id: String)

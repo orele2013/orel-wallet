@@ -1,8 +1,10 @@
 # Orel Wallet
 
-Wallet Android nativa con Kotlin, Jetpack Compose y Material 3. Tarjetas grandes, carrusel con gestos, personalización visual, historial local, temas claro/oscuro y un flujo completo de compra **DEMO**.
+La edición **release 1.1.0** personaliza referencias de tus tarjetas y prepara pagos con **Google Wallet**, que gestiona la tarjeta real y su autenticación. APK firmada: `artifacts/orel-wallet-release.apk`. Consulta la [guía de instalación y uso](docs/RELEASE.md) y la [verificación de release](docs/RELEASE_VERIFICATION.md).
 
-**Demo Mode does not perform real payments.** Esta APK no añade tarjetas bancarias, no funciona como una tarjeta de pago ante un TPV y no realiza cargos. Todas las tarjetas y transacciones iniciales son ficticias; las tarjetas Visa, Mastercard y Amex están marcadas como DEMO.
+La edición **debug/demo** es una wallet Android nativa con Kotlin, Jetpack Compose y Material 3. Tarjetas grandes, carrusel con gestos, personalización visual, historial local, temas claro/oscuro y un flujo completo de compra **DEMO**.
+
+**Demo Mode does not perform real payments.** La APK demo no añade tarjetas bancarias, no funciona como una tarjeta de pago ante un TPV y no realiza cargos. Todas las tarjetas y transacciones iniciales son ficticias; las tarjetas Visa, Mastercard y Amex están marcadas como DEMO.
 
 ![Capturas reales de Orel Wallet en el emulador Android](artifacts/preview.png)
 
@@ -57,7 +59,7 @@ app/src/main/java/com/orel/wallet/
 backend/           servidor mock local independiente
 ```
 
-MVVM con separación de presentación, dominio y datos. La inyección de dependencias explícita en `WalletApplication` comparte un repositorio Room y un servicio demo; no requiere un framework DI. Las mutaciones de tarjetas y registros son transaccionales. Los tests del repositorio en memoria usan las mismas invariantes que Room.
+MVVM con separación de presentación, dominio y datos. La inyección de dependencias explícita en `WalletApplication` comparte un repositorio Room y selecciona el servicio demo en debug o el servicio real que rechaza cargos directos en release; no requiere un framework DI. Las mutaciones de tarjetas y registros son transaccionales. Los tests del repositorio en memoria usan las mismas invariantes que Room.
 
 `Card.network`, `last4` e `isDemo` son identidad; `CardAppearance` es estética. Actualizar apariencia no puede modificar esos campos. No existen campos `fullPan` o `cvv` en los modelos persistidos. Las imágenes elegidas se copian a `noBackupFilesDir/card-images` con tamaño limitado y nombre generado, sin permisos amplios de almacenamiento.
 

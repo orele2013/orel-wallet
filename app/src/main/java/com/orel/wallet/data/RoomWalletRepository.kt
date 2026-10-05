@@ -9,8 +9,8 @@ import com.orel.wallet.wallet.WalletRules
 import com.orel.wallet.wallet.WalletRules.eligibleDefault
 import kotlinx.coroutines.flow.map
 
-class RoomWalletRepository(context: Context) : WalletRepository {
-    private val database = Room.databaseBuilder(context.applicationContext, WalletDatabase::class.java, "orel-wallet-demo.db").build()
+class RoomWalletRepository(context: Context, private val seedDemoData: Boolean = true) : WalletRepository {
+    private val database = Room.databaseBuilder(context.applicationContext, WalletDatabase::class.java, if(seedDemoData) "orel-wallet-demo.db" else "orel-wallet.db").build()
     private val dao = database.walletDao()
     override val cards = dao.observeCards().map { values -> values.map { it.toDomain() } }
     override val transactions = dao.observeTransactions().map { values -> values.map { it.toDomain() } }
@@ -19,8 +19,10 @@ class RoomWalletRepository(context: Context) : WalletRepository {
     override suspend fun initialize() = database.withTransaction {
         // Persisted settings row is also the initialization marker, so deleted cards stay deleted.
         if (dao.settings() == null) {
-            if (dao.allCards().isEmpty()) dao.insertCards(DemoSeed.cards().map { it.toEntity() })
-            DemoSeed.transactions().forEach { if (dao.transaction(it.id) == null) dao.insertTransaction(it.toEntity()) }
+            if (seedDemoData) {
+                if (dao.allCards().isEmpty()) dao.insertCards(DemoSeed.cards().map { it.toEntity() })
+                DemoSeed.transactions().forEach { if (dao.transaction(it.id) == null) dao.insertTransaction(it.toEntity()) }
+            }
             dao.saveSettings(WalletSettings().toEntity())
         }
     }
@@ -43,6 +45,16 @@ class RoomWalletRepository(context: Context) : WalletRepository {
     }
 
     override suspend fun removeCard(id: String) { mutate { WalletRules.normalize(it.filterNot { card -> card.id == id }) } }
+
+    override suspend fun addExternalCard(network: CardNetwork, displayName: String, last4: String): Card {
+        var id = ""
+        val updated = mutate { existing ->
+            val card = WalletRules.newExternalCard(network, displayName, last4, existing.size)
+            id = card.id
+            WalletRules.normalize(existing + card)
+        }
+        return updated.first { it.id == id }
+    }
     override suspend fun updateCard(card: Card) { mutate { WalletRules.update(it, card) } }
     override suspend fun setDefault(id: String) {
         mutate { existing ->

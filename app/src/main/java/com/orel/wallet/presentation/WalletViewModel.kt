@@ -10,6 +10,8 @@ import com.orel.wallet.nfc.NfcController
 import com.orel.wallet.nfc.NfcStatus
 import com.orel.wallet.payments.DemoPaymentService
 import com.orel.wallet.payments.PaymentSession
+import com.orel.wallet.payments.PaymentService
+import com.orel.wallet.BuildConfig
 import com.orel.wallet.wallet.WalletRepository
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -21,7 +23,7 @@ data class WalletUiState(
     val settings:WalletSettings = WalletSettings(),val loaded:Boolean=false
 )
 
-class WalletViewModel(val repository:WalletRepository,val paymentService:DemoPaymentService,context:Context):ViewModel() {
+class WalletViewModel(val repository:WalletRepository,val paymentService:PaymentService,context:Context):ViewModel() {
     private val appContext=context.applicationContext as Application
     private val ready=MutableStateFlow(false)
     val ui:StateFlow<WalletUiState> = combine(repository.cards,repository.transactions,repository.settings,ready) { cards,tx,settings,loaded -> WalletUiState(cards,tx,settings,loaded) }
@@ -43,7 +45,14 @@ class WalletViewModel(val repository:WalletRepository,val paymentService:DemoPay
     fun select(id:String) { selectedId.value=id }
     fun clearMessage() { message.value=null }
     private fun perform(action:suspend ()->Unit) { viewModelScope.launch { try { action() } catch(e:CancellationException) { throw e } catch(e:Exception) { message.value=e.message ?: "No se pudo completar la operación" } } }
-    fun add(network:CardNetwork,name:String,onAdded:(String)->Unit) = perform { val card=repository.addCard(network,name); selectedId.value=card.id; onAdded(card.id) }
+    fun add(network:CardNetwork,name:String,onAdded:(String)->Unit) = perform { check(BuildConfig.DEMO_MODE); val card=repository.addCard(network,name); selectedId.value=card.id; onAdded(card.id) }
+    fun addExternal(network:CardNetwork,name:String,last4:String,onAdded:(String)->Unit,onError:()->Unit) {
+        viewModelScope.launch {
+            try {val card=repository.addExternalCard(network,name,last4); selectedId.value=card.id; onAdded(card.id)}
+            catch(e:CancellationException) {throw e}
+            catch(e:Exception) {message.value=e.message ?: "No se pudo guardar la referencia"; onError()}
+        }
+    }
     fun update(card:Card) = perform { repository.updateCard(card) }
     fun remove(card:Card,onRemoved:()->Unit) = perform { repository.removeCard(card.id); if(selectedId.value==card.id) selectedId.value=null; onRemoved() }
     fun default(card:Card) = perform { repository.setDefault(card.id) }
@@ -77,7 +86,7 @@ class WalletViewModel(val repository:WalletRepository,val paymentService:DemoPay
             catch(e:Exception) {onError(e.message ?: "No se pudo preparar la demo")}
         }
     }
-    fun demoAuthenticate(session:PaymentSession) = perform { paymentService.authenticateDemo(session) }
+    fun demoAuthenticate(session:PaymentSession) = perform { check(BuildConfig.DEMO_MODE); (paymentService as DemoPaymentService).authenticateDemo(session) }
     fun authenticated(session:PaymentSession) = perform { paymentService.authenticate(session) }
     fun executeDemo(session:PaymentSession) = perform { paymentService.executePayment(session) }
     fun cancelPayment() { paymentService.cancel() }
