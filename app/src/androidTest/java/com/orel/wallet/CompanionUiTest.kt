@@ -90,4 +90,41 @@ class CompanionUiTest {
         compose.onNodeWithText("Guardar referencia").performScrollTo().assertIsNotEnabled()
         assertTrue(runBlocking {repository.cards.first().isEmpty()})
     }
+
+    @Test fun internationalArtCanBeSearchedSelectedSavedAndReopened() {
+        addReference()
+        val before=runBlocking {repository.cards.first().single()}
+        compose.onNodeWithText("Card Appearance").performScrollTo().performClick()
+        compose.onNodeWithText("Amex").performScrollTo().performClick()
+        compose.onNodeWithText("Buscar diseño o país").performScrollTo().performTextInput("ANA Japón")
+        compose.onNodeWithText("3 diseños").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithContentDescription("Diseño ANA Premium, Japón").assertExists()
+        compose.onNodeWithText("Buscar diseño o país").performTextReplacement("no existe")
+        compose.onNodeWithText("No hay diseños con esa búsqueda.",substring=true).assertExists()
+        compose.onNodeWithText("Buscar diseño o país").performTextReplacement("Centurion Wiley")
+        compose.onNodeWithContentDescription("Diseño Centurion · Kehinde Wiley, Italia / Reino Unido")
+            .performScrollTo().performClick().assertIsSelected()
+        compose.onNodeWithContentDescription("Brillo de la tarjeta").assertDoesNotExist()
+        compose.onNodeWithText("Guardar apariencia").performClick()
+        compose.waitUntil(10_000) {runBlocking {repository.findCard(before.id)?.appearance?.backgroundValue=="amex_centurion_wiley"}}
+        // A second Room instance reads the persisted selection, independent of editor state.
+        val after=runBlocking {com.orel.wallet.data.RoomWalletRepository(compose.activity,seedDemoData=false).findCard(before.id)}!!
+        assertEquals(before.id,after.id)
+        assertEquals(before.network,after.network)
+        assertEquals(before.last4,after.last4)
+        assertFalse(after.isDemo)
+        assertFalse(after.contactlessEnabled)
+        assertTrue(runBlocking {repository.transactions.first().isEmpty()})
+        compose.waitUntil(10_000) {compose.onAllNodesWithText("Detalles de tarjeta").fetchSemanticsNodes().isNotEmpty()}
+        compose.waitUntil(10_000) {compose.onAllNodesWithText("Apariencia guardada").fetchSemanticsNodes().isEmpty()}
+        compose.onNodeWithText("Card Appearance").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("Diseño Centurion · Kehinde Wiley, Italia / Reino Unido")
+            .performScrollTo().assertIsSelected()
+        compose.onNodeWithText("VISA · •••• 4821").assertExists()
+        // An existing original skin can still replace the full artwork.
+        compose.onNodeWithText("Imagen").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("Skin Aurora").performScrollTo().performClick()
+        compose.onNodeWithText("Guardar apariencia").performClick()
+        compose.waitUntil(10_000) {runBlocking {repository.findCard(before.id)?.appearance?.backgroundValue=="violet"}}
+    }
 }

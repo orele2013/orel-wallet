@@ -1,4 +1,4 @@
-# Privacidad — Orel Wallet 1.1.0
+# Privacidad — Orel Wallet 1.2.0
 
 La edición release personal guarda nombres, red y últimos cuatro dígitos introducidos por el usuario, referencias visuales, imágenes y ajustes en el dispositivo. No solicita números completos de tarjeta, CVV ni PIN. Las imágenes elegidas se copian al almacenamiento privado; no uses fotos que contengan credenciales de tu tarjeta.
 
@@ -11,3 +11,5 @@ Las copias de seguridad de la app están desactivadas. Puedes eliminar referenci
 La edición debug/demo es independiente: guarda tarjetas y movimientos ficticios, nunca realiza cargos. Su HCE de laboratorio comparte solo una referencia temporal DEMO mientras existe una sesión autorizada; ese servicio está deshabilitado en release. El backend mock es una herramienta local de desarrollo independiente y no recibe datos de ninguna APK.
 
 El contrato de almacenamiento de tokens de laboratorio cifra referencias opacas con Android Keystore y las excluye del backup. El flujo release con Google Wallet no aprovisiona ni almacena tokens bancarios.
+
+La galería American Express contiene imágenes públicas de catálogo incluidas en la APK. Buscar, elegir o guardar un diseño no envía datos a American Express ni descarga imágenes. Los nombres y números ya impresos en esas imágenes son referencias del catálogo; no se incorporan como identidad bancaria de tu tarjeta.

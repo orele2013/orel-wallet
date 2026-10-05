@@ -1,42 +1,40 @@
-# Verificación — Orel Wallet release 1.1.0
+# Verificación — Orel Wallet release 1.2.0
 
-Comprobada el 5 de octubre de 2026. Esta edición es una app personal de referencias visuales con acceso a Google Wallet; no es una implementación bancaria NFC propia.
+Comprobada el 5 de octubre de 2026. Esta edición añade la galería internacional Amex a la app PERSONAL de referencias visuales con acceso a Google Wallet.
 
-## Artefacto entregado
+## Artefacto
 
 - APK: `artifacts/orel-wallet-release.apk`.
-- Paquete: `com.orel.wallet.companion`, versión `1.1.0`, código `2`.
-- Android mínimo: 11 / API 30; target y compilación: API 35.
-- Tamaño: 4,408,932 bytes (aprox. 4,2 MiB).
-- SHA-256: `f979b85eb99f218cfd983cc54f016ae27f6c8bf752465548af3b3ccb6c96e460`.
-- Firma verificada mediante `apksigner`, esquema v2, certificado `CN=Orel Wallet`.
-- Huella SHA-256 del certificado: `7bc8a6884de9f607bb15a9b394db69642781317780767c4cd7e4e773eae23f06`.
-- Compilación release optimizada con R8 y reducción de recursos, sin flag debuggable. Backup deshabilitado y sin permiso de Internet.
-- Manifiesto final: `DemoHceService` deshabilitado. Las rutas de pago demo no se registran en release.
+- Paquete: `com.orel.wallet.companion`, versión `1.2.0`, código `3`.
+- Android mínimo: 11/API 30; target: API 35.
+- Tamaño: 13.040.019 bytes (12,4 MiB).
+- SHA-256: `c66dfe085faec48afb32530f547ddf2a2ba7718de1120e6d126d6b431538fe9c`.
+- Firma v2 verificada con `apksigner`, certificado `CN=Orel Wallet`.
+- Huella SHA-256 del certificado: `7bc8a6884de9f607bb15a9b394db69642781317780767c4cd7e4e773eae23f06`, conservada desde 1.1.0.
+- Release optimizada con R8 y reducción de recursos. Sin flag debuggable, backup deshabilitado, sin permiso de Internet y HCE de demo deshabilitado.
 
-## Comprobaciones ejecutadas
+## Comprobaciones
 
 | Comprobación | Resultado |
 |---|---|
-| `assembleRelease testDebugUnitTest lintRelease` | Build correcto; 29 tests JVM aprobados |
-| `assembleRelease lintRelease` tras configurar las pruebas release | Build correcto; 0 errores de lint, 17 avisos |
-| `CompanionUiTest` sobre release PERSONAL firmada, sin reducción para las pruebas | 3 tests aprobados, `OK (3 tests)` |
-| Instalación de la APK optimizada final sobre la edición de pruebas | Correcta; actualización con la misma firma |
-| Arranque de la APK optimizada en emulador API 35 ARM64 | Correcto |
-| Inspección de bienvenida, inicio sin tarjetas ni movimientos demo, formulario de referencia y guía NFC/Wallet en la APK optimizada | Correcta |
-| Identidad y exclusión de credenciales bancarias | Alta con solo cuatro dígitos; rechazo de número completo en el campo; red/id/últimos dígitos conservados al cambiar skin |
-| Ausencia de confirmaciones ficticias | Referencia externa no puede pagar por el servicio demo; servicio de pago directo rechaza operaciones; historial release remite a Pixpay |
+| `testDebugUnitTest` | 31 pruebas JVM aprobadas; 0 errores/fallos |
+| `assembleRelease assembleReleaseAndroidTest` con opciones de QA | Build correcto |
+| `CompanionUiTest` en release PERSONAL firmada sin reducción para el ejecutor | `OK (4 tests)`, 62,856 s |
+| `assembleRelease lintRelease` sin opciones de QA | Build correcto; 0 errores de lint, 17 avisos |
+| `python3 scripts/verify_card_art.py` | 67 diseños; hashes, fuentes y mapeos de recursos verificados |
+| Comparación de cada imagen original con su WebP sin pérdida | Píxeles RGBA idénticos en los 67 diseños |
+| Comparación de los recursos WebP incluidos en la APK final con el inventario | Los 67 recursos conservados byte por byte después de reducir/optimizar |
+| Instalación/arranque de la APK optimizada sobre la versión de QA | Correctos, misma firma y datos conservados |
+| Revisión manual de galería, selección de Centurion Black, guardado y reinicio completo de la APK optimizada | Correcta; imagen conservada e identidad Visa/4821 visible |
 
-Los tests Android verifican Room real, ausencia de seed demo, servicio HCE deshabilitado, rechazo de operaciones directas, alta de referencia Pixpay, persistencia de skin sin alterar identidad, rechazo de PAN en el campo de últimos dígitos, guía de Wallet y ausencia de movimientos generados.
+Las pruebas Android usan Room real y verifican búsquedas de ANA/Japón y Centurion/Wiley, ausencia de resultados, selección accesible, guardado y relectura mediante otra instancia de Room, conservación de id/red/últimos dígitos, ausencia de transacciones, recuperación de selección al reabrir el editor y retorno a Aurora. También mantienen las comprobaciones de alta con cuatro dígitos, ausencia de seed demo y guía de Wallet.
 
-El ejecutor Compose necesita clases que R8 elimina del código de la app al no usarlas esta directamente. Por eso las pruebas usan `-PorelTestBuildType=release -PorelReleaseUiTests=true`, conservando el modo PERSONAL, paquete, firma y política NFC, y dejando la reducción desactivada únicamente para esa ejecución. La APK entregada vuelve a compilarse sin esa opción y se revisa por separado. No se afirma que el ejecutor Compose haya probado directamente el binario reducido.
+La instrumentación Compose usa `-PorelTestBuildType=release -PorelReleaseUiTests=true` para conservar APIs de AndroidX que R8 elimina del código de la aplicación. Conserva el modo PERSONAL, paquete, firma y política NFC. La APK entregada se recompila sin esa opción; no se afirma que el ejecutor Compose haya probado directamente el binario reducido.
 
-Los avisos de lint corresponden a versiones disponibles de dependencias, uso de kapt y sugerencias de extensiones KTX. No se modificó la combinación de dependencias ya validada para introducir actualizaciones de alcance mayor durante esta entrega.
+Capturas reales de la APK optimizada: [galería](../artifacts/qa-amex-gallery.png), [vista previa de Centurion](../artifacts/qa-amex-centurion.png) e [inicio después del reinicio](../artifacts/qa-amex-home.png).
 
-## Límites de la comprobación
+La fidelidad se refiere a las imágenes públicas documentadas; su resolución varía y no reproduce materiales físicos. La colección no es exhaustiva de todos los países/años. Fuentes y atribuciones en [CARD_DESIGNS.md](CARD_DESIGNS.md).
 
-El emulador no tiene NFC ni Google Wallet instalado. Se verificó la guía para esas ausencias, pero no el arranque de Wallet instalado, la incorporación de tu Pixpay, su autenticación, ni un pago físico en datáfono. Esa configuración se completa en tu teléfono siguiendo [RELEASE.md](RELEASE.md).
+Orel mantiene su papel de referencia visual: no convierte Pixpay en Amex ni modifica la apariencia o autenticación de Google Wallet. El emulador carece de NFC y Google Wallet; no se verificó un pago físico. La comprobación anterior se conserva en [RELEASE_VERIFICATION_1.1.0.md](RELEASE_VERIFICATION_1.1.0.md).
 
-Orel no recibe la tarjeta seleccionada, historial, autorización ni resultado de pagos de Wallet. El resultado debe comprobarse en el datáfono y Pixpay. La APK no se ha publicado en Google Play.
-
-Los registros de desarrollo se conservan en `.tools/`: `release-final-build.log`, `release-ui-stable-tests.log`, `release-signature.log`, `release-manifest.log` y `release-guide-ui.txt`. Las claves privadas y propiedades de firma están excluidas de Git.
+Registros locales de esta entrega en `.tools/amex/`: `build-tests.log`, `ui-tests.log`, `final-build.log`, `signature.log`, `badging.log` y `manifest.log`. Las claves privadas y propiedades de firma permanecen excluidas de Git.

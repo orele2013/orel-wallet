@@ -1,4 +1,4 @@
-# Orel Wallet 1.1.0 — release personal con Google Wallet
+# Orel Wallet 1.2.0 — release personal con Google Wallet
 
 La APK `artifacts/orel-wallet-release.apk` es una compilación release firmada de Orel Wallet. Permite guardar referencias visuales de tus tarjetas, personalizarlas y abrir Google Wallet. Los pagos contactless los realiza Google Wallet con la tarjeta seleccionada allí. Orel no tiene credenciales bancarias ni una API para autorizar cada pago o recibir su resultado.
 
@@ -8,7 +8,7 @@ La APK `artifacts/orel-wallet-release.apk` es una compilación release firmada d
 2. Instala [Google Wallet oficial](https://play.google.com/store/apps/details?id=com.google.android.apps.walletnfcrel). Añade tu Pixpay siguiendo la aplicación Pixpay o Wallet y completa las verificaciones solicitadas por el emisor. La compatibilidad depende de tu tarjeta, cuenta y dispositivo; guardar una referencia en Orel no la comprueba.
 3. Activa NFC y configura Google Wallet como aplicación de pago predeterminada en Android.
 4. En Orel, pulsa **Comenzar → Añadir tarjeta**. Introduce el nombre, la red que aparece en tu tarjeta y solo los últimos cuatro dígitos. Nunca el número completo, CVV o PIN.
-5. Personaliza en los detalles → **Card Appearance**. Pulsa **Preparar pago con Wallet** para consultar las instrucciones o abrir Wallet y seleccionar la tarjeta real.
+5. Personaliza en los detalles → **Card Appearance**. La pestaña **Amex** permite buscar entre 67 diseños internacionales, incluidos Centurion, Platinum y tarjetas de aerolíneas/hoteles. Elige uno y pulsa **Guardar apariencia**. La imagen cambia solo en Orel; tu referencia conserva su red y últimos cuatro dígitos. Pulsa **Preparar pago con Wallet** para consultar las instrucciones o abrir Wallet y seleccionar la tarjeta real.
 6. Desbloquea el móvil y acerca su parte trasera al datáfono. Puedes mantener Orel abierta cuando Wallet sea la aplicación predeterminada y el dispositivo lo permita. Android o Google pueden pedir su propia autenticación; Orel no puede sustituirla ni asegurar que no aparezca.
 7. Comprueba la confirmación del datáfono y los movimientos en Pixpay. Volver de Wallet no confirma una compra en Orel.
 

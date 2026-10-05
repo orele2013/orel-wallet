@@ -15,4 +15,6 @@ Apache License 2.0: https://www.apache.org/licenses/LICENSE-2.0
 
 Eclipse Public License 1.0: https://www.eclipse.org/legal/epl-v10.html
 
-Los nombres Visa, Mastercard y Amex identifican únicamente ejemplos ficticios de redes en modo demo; no implican emisión, certificación ni afiliación. Los fondos de tarjetas y el icono de Orel Wallet son originales, generados en este proyecto. Los iconos de interfaz proceden de Material Icons mediante AndroidX.
+Los nombres Visa, Mastercard y Amex identifican redes en las referencias personales y ejemplos ficticios en modo demo; no implican emisión, certificación ni afiliación. Las seis skins de Orel (Blue Silk, Carbon, Gold Hour, Aurora, Lagoon y Glacier) y el icono de Orel Wallet son originales, generados en este proyecto. Los iconos de interfaz proceden de Material Icons mediante AndroidX.
+
+La galería Amex utiliza imágenes públicas de referencia de American Express y sus colaboradores, propiedad de sus respectivos titulares, que no se distribuyen como arte original de Orel ni como recursos de código abierto. Orel es independiente de American Express. El inventario, las fuentes y las atribuciones figuran en [docs/CARD_DESIGNS.md](docs/CARD_DESIGNS.md) y [docs/CARD_ART_SOURCES.json](docs/CARD_ART_SOURCES.json).

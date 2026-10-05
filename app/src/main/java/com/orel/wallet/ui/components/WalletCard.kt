@@ -42,6 +42,11 @@ fun skinResource(skin: String): Int = when (skin) {
 @Composable
 fun WalletCard(card: Card, modifier: Modifier = Modifier, compact: Boolean = false) {
     val a = card.appearance
+    val design = CardDesignCatalog.find(a)
+    if (design != null) {
+        ReferenceArtworkCard(card, design, modifier, compact)
+        return
+    }
     val shape = RoundedCornerShape(22.dp)
     val ink = Color(a.textColor)
     val contrast = 0.7f + a.contrast * 0.6f
@@ -89,6 +94,28 @@ fun WalletCard(card: Card, modifier: Modifier = Modifier, compact: Boolean = fal
                     else -> Text(when(card.network){CardNetwork.VISA -> "VISA"; CardNetwork.AMEX -> "AMEX"; CardNetwork.LOYALTY -> "CLUB"; else -> "GIFT"},color=ink,fontWeight=FontWeight.Bold,fontSize=if(compact) 17.sp else 22.sp,letterSpacing=(-0.5).sp)
                 }
             }
+        }
+    }
+}
+
+/** Keep the public artwork intact; the actual reference identity is always outside the image. */
+@Composable private fun ReferenceArtworkCard(card: Card, design: CardDesign, modifier: Modifier, compact: Boolean) {
+    Column(modifier.fillMaxWidth().semantics(mergeDescendants = true) {
+        contentDescription = "${card.displayName}, ${card.network}, termina en ${card.last4}, diseño ${design.name}, ${if(card.isDemo) "tarjeta demo" else "referencia visual"}${if(card.isLocked) ", bloqueada" else ""}"
+    }) {
+        Image(painterResource(cardDesignResource(design)), null,
+            Modifier.fillMaxWidth().aspectRatio(480f / 304f), contentScale = ContentScale.Fit)
+        Row(Modifier.fillMaxWidth().padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(card.displayName, style = MaterialTheme.typography.labelLarge, maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                Text(if(card.isDemo) "Diseño ${design.name} · Demo" else "Diseño ${design.name} · Referencia visual",
+                    style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = if(compact) 1 else 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+            }
+            Text("${card.network} · •••• ${card.last4}", style = MaterialTheme.typography.labelMedium,
+                modifier = Modifier.padding(start = 8.dp))
+            if(card.isLocked) Icon(Icons.Outlined.Lock, "Bloqueada", modifier = Modifier.padding(start = 6.dp).size(18.dp))
         }
     }
 }

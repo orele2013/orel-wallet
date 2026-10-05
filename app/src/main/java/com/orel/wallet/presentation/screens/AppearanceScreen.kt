@@ -32,7 +32,8 @@ import com.orel.wallet.ui.components.*
 @Composable fun AppearanceScreen(card:Card?,vm:WalletViewModel,onBack:()->Unit) {
     if(card==null) { Column { ScreenHeader("Card Appearance",onBack); EmptyState("Tarjeta no disponible","Vuelve al wallet") }; return }
     var draft by remember(card.id) { mutableStateOf(card.appearance) }
-    var tab by remember { mutableIntStateOf(0) }
+    var tab by remember(card.id) { mutableIntStateOf(if(CardDesignCatalog.find(card.appearance) != null) 1 else 0) }
+    val design = CardDesignCatalog.find(draft)
     var hex by remember { mutableStateOf("#0866F5") }
     val picker=rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri -> uri?.let { vm.importImage(it) {path -> draft=draft.copy(backgroundType=BackgroundType.IMAGE,backgroundValue=path)} } }
     Column(Modifier.fillMaxSize()) {
@@ -41,7 +42,7 @@ import com.orel.wallet.ui.components.*
             WalletCard(card.copy(appearance=draft))
             Text("La misma tarjeta. Tu propio estilo.",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant,modifier=Modifier.padding(top=16.dp,bottom=18.dp))
             Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(6.dp)) {
-                listOf("Imagen","Color","Estilo","Texto").forEachIndexed { i,label -> FilterChip(tab==i,{tab=i},label={Text(label)}) }
+                listOf("Imagen","Amex","Color","Estilo","Texto").forEachIndexed { i,label -> FilterChip(tab==i,{tab=i},label={Text(label)},enabled=design==null || i<3) }
             }
             when(tab) {
                 0 -> {
@@ -61,7 +62,8 @@ import com.orel.wallet.ui.components.*
                     OutlinedButton({picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))},Modifier.fillMaxWidth()) { Icon(Icons.Outlined.AddPhotoAlternate,null); Spacer(Modifier.width(8.dp)); Text("Elegir imagen de la galería") }
                     Text("La imagen se guarda únicamente en este dispositivo.",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant,modifier=Modifier.padding(top=8.dp))
                 }
-                1 -> {
+                1 -> AmericanExpressGallery(draft) { draft=draft.withDesign(it) }
+                2 -> {
                     SectionLabel("Color de fondo")
                     Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) {
                         listOf("#0866F5","#202938","#926B37","#7457D8","#08796F","#C6DAED").forEach { color ->
@@ -71,13 +73,13 @@ import com.orel.wallet.ui.components.*
                     OutlinedTextField(hex,{value -> hex=value.take(7); if(value.matches(Regex("#[0-9a-fA-F]{6}"))) draft=draft.copy(backgroundType=BackgroundType.COLOR,backgroundValue=value)},label={Text("Color HEX")},singleLine=true,modifier=Modifier.fillMaxWidth().padding(top=16.dp))
                     SettingRow(Icons.Outlined.Gradient,"Aplicar gradiente","Añadir profundidad al color",trailing={WalletSwitch("Aplicar gradiente",draft.backgroundType==BackgroundType.GRADIENT,{draft=draft.copy(backgroundType=if(it) BackgroundType.GRADIENT else BackgroundType.COLOR,backgroundValue=hex.takeIf {v->v.matches(Regex("#[0-9a-fA-F]{6}"))} ?: "#0866F5")})})
                 }
-                2 -> {
+                3 -> {
                     SectionLabel("Chip visual")
                     Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) { ChipStyle.entries.forEach { type -> FilterChip(draft.chipStyle==type,{draft=draft.copy(chipStyle=type)},label={Text(when(type){ChipStyle.SILVER->"Plata"; ChipStyle.GOLD->"Oro"; ChipStyle.MINIMAL->"Minimal"})}) } }
                     SectionLabel("Posición del número")
                     Row(horizontalArrangement=Arrangement.spacedBy(10.dp)) { NumberPosition.entries.forEach { type -> FilterChip(draft.numberPosition==type,{draft=draft.copy(numberPosition=type)},label={Text(if(type==NumberPosition.TOP) "Arriba" else "Abajo")}) } }
                 }
-                3 -> {
+                4 -> {
                     SectionLabel("Tipografía")
                     Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) { TextStyle.entries.forEach { type -> FilterChip(draft.textStyle==type,{draft=draft.copy(textStyle=type)},label={Text(if(type==TextStyle.CLASSIC) "Clásica" else "Monoespaciada")}) } }
                     Row(Modifier.padding(vertical=16.dp),horizontalArrangement=Arrangement.spacedBy(14.dp)) {
@@ -87,11 +89,16 @@ import com.orel.wallet.ui.components.*
                     SettingRow(Icons.Outlined.Badge,"Mostrar nombre",trailing={WalletSwitch("Mostrar nombre en tarjeta",draft.showName,{draft=draft.copy(showName=it)})})
                 }
             }
+            if(design == null) {
             SectionLabel("Ajustes de imagen")
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) { Text("Brillo",style=MaterialTheme.typography.bodyMedium); Text("${(draft.brightness*100).toInt()}%",style=MaterialTheme.typography.bodySmall) }
             Slider(draft.brightness,{draft=draft.copy(brightness=it)},modifier=Modifier.semantics {contentDescription="Brillo de la tarjeta"})
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) { Text("Contraste",style=MaterialTheme.typography.bodyMedium); Text("${(draft.contrast*100).toInt()}%",style=MaterialTheme.typography.bodySmall) }
             Slider(draft.contrast,{draft=draft.copy(contrast=it)},modifier=Modifier.semantics {contentDescription="Contraste de la tarjeta"})
+            } else {
+                Text("${design.name} · ${design.region}",style=MaterialTheme.typography.titleSmall,modifier=Modifier.padding(top=20.dp))
+                Text("Imagen de catálogo sin filtros. Los nombres y cifras impresos son ejemplos del diseño; tu referencia aparece debajo.",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant,modifier=Modifier.padding(top=8.dp,bottom=12.dp))
+            }
             Text("La apariencia no modifica la red, el emisor ni las credenciales de pago.",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant,modifier=Modifier.padding(bottom=24.dp))
         }
         Surface(shadowElevation=4.dp) { Button({vm.appearance(card.id,draft,onBack)},Modifier.fillMaxWidth().padding(horizontal=24.dp,vertical=16.dp).height(52.dp)) { Text("Guardar apariencia") } }

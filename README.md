@@ -1,8 +1,12 @@
 # Orel Wallet
 
-[Descargar APK firmada v1.1.0](https://github.com/orele2013/orel-wallet/releases/download/v1.1.0/orel-wallet-release.apk) · [Ver release y checksum](https://github.com/orele2013/orel-wallet/releases/tag/v1.1.0)
+[Descargar APK firmada v1.2.0](https://github.com/orele2013/orel-wallet/releases/download/v1.2.0/orel-wallet-release.apk) · [Ver release y checksum](https://github.com/orele2013/orel-wallet/releases/tag/v1.2.0)
 
-La edición **release 1.1.0** personaliza referencias de tus tarjetas y prepara pagos con **Google Wallet**, que gestiona la tarjeta real y su autenticación. APK firmada: `artifacts/orel-wallet-release.apk`. Consulta la [guía de instalación y uso](docs/RELEASE.md) y la [verificación de release](docs/RELEASE_VERIFICATION.md).
+La edición **release 1.2.0** personaliza referencias de tus tarjetas y prepara pagos con **Google Wallet**, que gestiona la tarjeta real y su autenticación. APK firmada: `artifacts/orel-wallet-release.apk`. Consulta la [guía de instalación y uso](docs/RELEASE.md) y la [verificación de release](docs/RELEASE_VERIFICATION.md).
+
+La galería **Amex** incorpora 67 diseños internacionales, incluidos Centurion Black y Art Cards, Platinum Mirror, aerolíneas y hoteles. Usa imágenes de catálogo sin filtros y conserva la red y los últimos dígitos de tu referencia. Detalles y fuentes en [CARD_DESIGNS.md](docs/CARD_DESIGNS.md).
+
+![Selección de imágenes de referencia de la galería Amex](artifacts/amex-catalog.png)
 
 La edición **debug/demo** es una wallet Android nativa con Kotlin, Jetpack Compose y Material 3. Tarjetas grandes, carrusel con gestos, personalización visual, historial local, temas claro/oscuro y un flujo completo de compra **DEMO**.
 
