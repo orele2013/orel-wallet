@@ -1,0 +1,12 @@
+{
+  "name": "orel-wallet-demo-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Local in-memory demo API; never processes real payments.",
+  "engines": { "node": ">=22.10.0" },
+  "scripts": {
+    "start": "node --env-file-if-exists=../.env server.mjs",
+    "test": "node --test server.test.mjs"
+  }
+}
