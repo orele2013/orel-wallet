@@ -97,6 +97,7 @@ class WalletUiTest {
         compose.onNodeWithText("Pagar demo").performClick()
         compose.waitUntil(10_000) {compose.onAllNodesWithText("Simular autenticación · Demo").fetchSemanticsNodes().isNotEmpty()}
         compose.onNodeWithText("Simular autenticación · Demo").performScrollTo().performClick()
+        compose.waitUntil(10_000) {compose.onAllNodesWithText("Simular compra de 12,50 €").fetchSemanticsNodes().isNotEmpty()}
         compose.onNodeWithText("Simular compra de 12,50 €").performScrollTo().performClick()
         compose.waitUntil(10_000) {compose.onAllNodesWithText("Pago demo completado").fetchSemanticsNodes().isNotEmpty()}
         val tx=runBlocking {repository.transactions.first()}
